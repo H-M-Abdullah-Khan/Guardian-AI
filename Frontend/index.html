@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+        <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>GuardianAI | Advanced Scam Detection</title>
+  </head>
+  
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+   <script>
+        // Initialize Lucide Icons 
+        lucide.createIcons();
+
+        // Handle Analysis Button Click
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const scanInput = document.getElementById('scanInput');
+
+        analyzeBtn.addEventListener('click', function() {
+            if (!scanInput.value.trim()) {
+                scanInput.placeholder = "Please enter a link first...";
+                scanInput.classList.add('placeholder:text-red-400');
+                setTimeout(() => {
+                    scanInput.placeholder = "Paste suspicious link or message here...";
+                    scanInput.classList.remove('placeholder:text-red-400');
+                }, 2000);
+                return;
+            }
+
+            const btnText = this.querySelector('span');
+            const btnIcon = this.querySelector('i');
+            
+            btnText.innerText = "INITIALIZING...";
+            btnIcon.setAttribute('data-lucide', 'loader-2');
+            btnIcon.classList.add('animate-spin');
+            lucide.createIcons();
+            
+            // Subtle feedback before navigation
+            setTimeout(() => {
+                window.location.href = 'scan.html';
+            }, 1200);
+        });
+
+        // Enter key support
+        scanInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') analyzeBtn.click();
+        });
+
+        // Typing animation for placeholder
+        const placeholders = [
+            "https://suspicious-link.com",
+            "Check this weird email...",
+            "Is this SMS a scam?",
+            "Verify crypto wallet address...",
+            "https://too-good-to-be-true.net"
+        ];
+        let pIndex = 0;
+        
+        setInterval(() => {
+            pIndex = (pIndex + 1) % placeholders.length;
+            scanInput.style.opacity = 0;
+            setTimeout(() => {
+                scanInput.placeholder = placeholders[pIndex];
+                scanInput.style.opacity = 1;
+            }, 300);
+        }, 4000);
+
+        
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Mock Data for fallback
+        const mockResult = {
+            url: "https://secure-payment-portal.net/verify",
+            stats: {
+                malicious: 0,
+                suspicious: 0,
+                harmless: 68,
+                undetected: 12
+            },
+            vendors: [
+                { name: "Google Safebrowsing", status: "clean", category: "phishing" },
+                { name: "Sophos", status: "clean", category: "malware" },
+                { name: "BitDefender", status: "clean", category: "society" },
+                { name: "Kaspersky", status: "clean", category: "malicious" },
+                { name: "Symantec", status: "clean", category: "clean" },
+                { name: "McAfee", status: "clean", category: "clean" },
+                { name: "Avast", status: "clean", category: "clean" },
+                { name: "Microsoft", status: "clean", category: "clean" },
+                { name: "Emsisoft", status: "clean", category: "clean" },
+                { name: "Fortinet", status: "clean", category: "clean" },
+                { name: "G-Data", status: "clean", category: "clean" },
+                { name: "Malwarebytes", status: "clean", category: "clean" }
+            ],
+            categories: {
+                "Sophos": "Command and Control",
+                "BitDefender": "Society",
+                "Forcepoint": "Information Technology"
+            },
+            history: {
+                first: "2024-02-10",
+                last: "2024-04-06"
+            },
+            http: {
+                code: 200,
+                final_url: "https://secure-payment-portal.net/verify",
+                length: "15.2 KB"
+            },
+            metadata: {
+                file_type: "HTML / JavaScript",
+                ip: "104.21.45.12",
+                nodes: "US, UK, CA, FR, SG"
+            }
+        };
+
+        function updateUI(data) {
+            // Stats
+            const total = data.stats.malicious + data.stats.suspicious + data.stats.harmless + data.stats.undetected;
+            const trustScore = Math.round(((data.stats.harmless + data.stats.undetected) / total) * 100);
+            
+            document.getElementById('scoreText').innerText = `${trustScore}%`;
+            document.getElementById('scannedUrl').innerText = data.url;
+            document.getElementById('maliciousCount').innerText = data.stats.malicious;
+            document.getElementById('suspiciousCount').innerText = data.stats.suspicious;
+            document.getElementById('harmlessCount').innerText = data.stats.harmless;
+            document.getElementById('undetectedCount').innerText = data.stats.undetected;
+
+            // Risk Level
+            const riskBadge = document.getElementById('riskBadge');
+            if (data.stats.malicious > 0) {
+                riskBadge.innerText = "Critical";
+                riskBadge.className = "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-red-100 text-red-600";
+                document.getElementById('scoreProgress').style.stroke = "var(--danger)";
+            } else if (data.stats.suspicious > 0) {
+                riskBadge.innerText = "Warning";
+                riskBadge.className = "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-amber-100 text-amber-600";
+                document.getElementById('scoreProgress').style.stroke = "#F59E0B";
+            } else {
+                riskBadge.innerText = "Secure";
+                riskBadge.className = "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-emerald-100 text-emerald-600";
+                document.getElementById('scoreProgress').style.stroke = "var(--primary)";
+            }
+
+            // Gauge Animation
+            const circle = document.getElementById('scoreProgress');
+            const radius = circle.r.baseVal.value;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (trustScore / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+
+            // Metadata
+            document.getElementById('fileType').innerText = data.metadata.file_type;
+            document.getElementById('ipAddress').innerText = data.metadata.ip;
+            document.getElementById('countryNodes').innerText = data.metadata.nodes;
+
+            // History
+            document.getElementById('firstSubmission').innerText = data.history.first;
+            document.getElementById('lastSubmission').innerText = data.history.last;
+
+            // HTTP
+            document.getElementById('statusCode').innerText = `${data.http.code} OK`;
+            document.getElementById('finalUrl').innerText = data.http.final_url;
+            document.getElementById('contentLength').innerText = data.http.length;
+
+            // Vendor Grid
+            const grid = document.getElementById('vendorGrid');
+            grid.innerHTML = '';
+            data.vendors.forEach(v => {
+                const item = document.createElement('div');
+                item.className = "p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between hover:bg-white hover:shadow-sm transition-all group";
+                
+                const isMalicious = v.status === 'malicious';
+                const icon = isMalicious ? 'alert-triangle' : 'shield';
+                const iconColor = isMalicious ? 'text-red-500' : 'text-emerald-500';
+                
+                item.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="p-2 bg-white rounded-lg shadow-sm border border-slate-100 group-hover:border-slate-200">
+                            <i data-lucide="${icon}" class="w-4 h-4 ${iconColor}"></i>
+                        </div>
+                        <div>
+                            <span class="block text-xs font-extrabold text-slate-900">${v.name}</span>
+                            <span class="block text-[8px] font-bold text-slate-400 uppercase tracking-widest">${v.category}</span>
+                        </div>
+                    </div>
+                    <span class="text-[8px] font-black uppercase tracking-widest ${isMalicious ? 'text-red-500' : 'text-emerald-500'}">${v.status}</span>
+                `;
+                grid.appendChild(item);
+            });
+
+            // Categories
+            const catList = document.getElementById('categoriesList');
+            catList.innerHTML = '';
+            Object.entries(data.categories).forEach(([vendor, cat]) => {
+                const div = document.createElement('div');
+                div.className = "flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100";
+                div.innerHTML = `
+                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">${vendor}</span>
+                    <span class="text-[10px] font-black text-slate-900">${cat}</span>
+                `;
+                catList.appendChild(div);
+            });
+
+            lucide.createIcons();
+            document.getElementById('reportDate').innerText = new Date().toLocaleString();
+        }
+
+        // Load data from localStorage or use mock
+        window.onload = () => {
+            const savedResult = localStorage.getItem('scanResult');
+            if (savedResult) {
+                try {
+                    const parsed = JSON.parse(savedResult);
+                    // Map fields if they exist, otherwise use defaults
+                    const finalData = {
+                        url: parsed.url || mockResult.url,
+                        stats: parsed.stats || mockResult.stats,
+                        vendors: parsed.vendors || mockResult.vendors,
+                        categories: parsed.categories || mockResult.categories,
+                        history: parsed.history || mockResult.history,
+                        http: parsed.http || mockResult.http,
+                        metadata: parsed.metadata || mockResult.metadata
+                    };
+                    updateUI(finalData);
+                } catch (e) {
+                    console.error("Error parsing scanResult", e);
+                    updateUI(mockResult);
+                }
+            } else {
+                updateUI(mockResult);
+            }
+        };
+    </script>
+</body>
+
+</html>
